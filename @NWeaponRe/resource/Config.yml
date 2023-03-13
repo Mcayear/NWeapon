@@ -1,0 +1,245 @@
+language: zh_cn
+version: "2022-09-23"
+worlds-disabled: world1, world2
+允许附魔: false
+NeedFailedTips: |-
+  §c=== 需求未满足 ===
+  缺少：§7%1
+品阶:
+  - §5一阶装备
+  - §5二阶装备
+  - §5三阶装备
+  - §5四阶装备
+  - §5五阶装备
+  - §3六阶装备
+  - §c魔王拆解
+  - §c幻域元素
+  - §e天族宝具
+  - §3[§e觉醒§3]§f□□□□□
+  - §3[§e觉醒§3]§b■§f□□□□
+  - §3[§e觉醒§3]§b■■§f□□□
+  - §3[§e觉醒§3]§b■■■§f□□
+  - §3[§e觉醒§3]§b■■■■§f□
+  - §3[§e觉醒§3]§b■■■■■
+  - §d§l炼化§r §f△△△
+  - §d§l炼化§r §b▲§f△△
+  - §d§l炼化§r §b▲▲§f△
+  - §d§l炼化§r §b▲▲▲
+  - §6神圣能量 §7✧✧✧
+  - §6神圣能量 §d✧§7✧✧
+  - §6神圣能量 §d✧✧§7✧
+  - §6神圣能量 §d✧✧✧
+  - §7其它
+稀有度:
+  - §b普通
+  - §a优秀
+  - §1稀有
+  - §5史诗
+  - §6传说
+  - §6§l远古传说
+  - §c幻域
+  - §l§d亚神器
+  - §3天族宝具
+  - §e定制
+分解所得:
+  - code_num1:
+      - mi give
+      - mi give
+    code_num2:
+      - mi give
+      - mi give
+  - - - mi give {player} 下级装备核心 1
+      - mi give {player} 一阶锻造材料 3
+    - - mi give {player} 下级装备核心 1
+      - mi give {player} 一阶锻造材料 5
+      - mi give {player} 二阶锻造材料 3
+    - - mi give {player} 下级装备核心 1
+      - mi give {player} 三阶锻造材料 3
+      - mi give {player} 二阶锻造材料 5
+    - - mi give {player} 中级装备核心 1
+      - mi give {player} 四阶锻造材料 3
+      - mi give {player} 三阶锻造材料 5
+锻造模式: 1
+锻造:
+  - - §4逆天
+    - §6传说
+    - §5史诗
+    - §9稀有
+    - §b精良
+    - §a优良
+    - §7普通
+    - §1粗糙
+  - - 0.001
+    - 0.015
+    - 0.04
+    - 0.085
+    - 0.109
+    - 0.15
+    - 0.38
+    - 0.22
+  - - 2.75
+    - 2.05
+    - 1.75
+    - 1.1
+    - 0.8
+    - 0.5
+    - 0.3
+    - 0.15
+锻造等级:
+  经验公式: 57*({等级}*{等级})+55
+  等级公式: Math.sqrt(({经验}-55)/57)
+  最大等级: 9
+默认镶嵌概率: 10
+ForingExp:
+  onlySameLevel: true
+  nonSameLevelGive: 0.1
+AttrDisplayPercent:
+  - 暴击倍率
+  - 吸血倍率
+  - 护甲强度
+  - 反伤倍率
+  - 经验加成
+  - 暴击率
+  - 吸血率
+  - 破防率
+  - 反伤率
+  - 闪避率
+  - 暴击抵抗
+  - 吸血抵抗
+  - 命中率
+  - 伤害加成
+  - 攻击加成
+  - 防御加成
+  - 生命加成
+useHarmFloatWord: true
+defaultAttr:
+  血量值: 20
+  破防率: 1
+EffectSuit:
+  新手套装:2:
+    attr:
+      血量值: 50
+GradeSymbol:
+  enable: true
+  list:
+    - - 9
+      - 6
+      - 3
+      - 1
+    - - ❂
+      - ✹
+      - ✸
+      - ✶
+Seiko:
+  enable: true
+  failedAddition: 0.05
+  needMoney:
+    - 100000
+    - 100000
+    - 100000
+    - 1000000
+    - 1000000
+    - 1000000
+    - 10000000
+    - 10000000
+    - 10000000
+    - 100000000
+    - 100000000
+    - 100000000
+  chance:
+    - 1
+    - 0.7
+    - 0.7
+    - 0.7
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.3
+    - 0.3
+    - 0.3
+    - 0.1
+    - 0.1
+    - 0.1
+  failed:
+    - - 3
+      - 0.5
+      - 0.15
+      - 0.5
+      - 0.3
+    - - 12
+      - 0.5
+      - 0.15
+      - 0.5
+      - 0.3
+  broadcastMessage:
+    - 6
+    - §6§l[精工系统] §r§a%p §f欧皇附体！成功打造出§e %lv §f级 %weapon §r！！
+  attr:
+    - - 攻击力: 300
+      - 攻击力: 600
+      - 攻击力: 900
+    - - 防御力: 300
+      - 防御力: 600
+      - 防御力: 900
+Rune:
+  enable: false
+bind:
+  enable: false
+  defaultBind: false
+unbind:
+  enable: true
+  onlyOp: false
+  failExec: []
+  succExec:
+    - uie exec 解除灵魂绑定 "%p" true
+Strengthen:
+  enable: true
+  failedAddition: 0.005
+  need:
+    - nbt@淬炼石:1||money@1e5
+    - nbt@淬炼石:2||money@2e5
+    - nbt@淬炼石:4||money@4e5
+  chance:
+    - 0.85
+    - 0.8
+    - 0.75
+  failed:
+    - - 5
+      - 0
+    - - 16
+      - 0.5
+      - 0.5
+  broadcastMessage:
+    - 6
+    - §c§l[淬炼系统] §r§a%p §f欧皇附体！成功打造出§e %lv §f级 %weapon §r！！
+  style:
+    icon: ●
+    firstList:
+      - §f§l
+      - §f§l
+      - §a§l
+      - §a§l
+      - §b§l
+      - §b§l
+      - §9§l
+      - §9§l
+      - §5§l
+      - §5§l
+      - §6§l
+      - §6§l
+      - §d§l
+      - §d§l
+      - §1§l
+  attr:
+    - - 攻击加成: 0.01
+        暴击率: 0.01
+      - 攻击加成: 0.04
+        暴击率: 0.02
+      - 攻击加成: 0.09
+        暴击率: 0.03
+    - - 生命加成: 0.01
+        防御加成: 0.01
+      - 生命加成: 0.04
+        防御加成: 0.04
+      - 生命加成: 0.09
+        防御加成: 0.09
