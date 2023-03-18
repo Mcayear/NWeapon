@@ -104,7 +104,7 @@ export function ForgingFakeInvClose (event) {
     }
     _C.PlayerData[player.getName()].req = eval(_C.MainConfig.锻造等级.经验公式.replace(/{等级}/g, _C.PlayerData[player.getName()].level + 1)) - _C.PlayerData[player.getName()].exp;
     _C.PlayerData[player.getName()].req = Number(_C.PlayerData[player.getName()].req.toFixed(2));// 防止浮点数错误
-    File.writeTo("./plugins/BlocklyNukkit/NWeapon/PlayerData.json", JSON.stringify(_C.PlayerData, null, 2));
+    File.writeTo("./plugins/NWeapon/PlayerData.json", JSON.stringify(_C.PlayerData, null, 2));
     player.sendMessage("[NWeapon] 恭喜您获得了 §l" + addxp + " §r点锻造经验");
     if (_C.MainConfig.锻造词条 && itemData.锻造词条) {// 开始
         WeaponToForgeEntry(player, weapon, index, Strength, PaperData, entryConfigToCraft(_C.ForgeEntry[itemData.锻造词条], itemData));

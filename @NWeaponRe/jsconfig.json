@@ -23,7 +23,6 @@
   
   "include": [
     "../.header/**/*.d.ts",
-    "../@LLSELib/**/*.js",
     "./**/*.js",
     "./**/*.ts"
   ]

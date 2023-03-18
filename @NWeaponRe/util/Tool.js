@@ -8,7 +8,8 @@ const Util = new UtilClass();
 /**
  * 将数字ID转为字符串id
  * @param {object} config 
- * @param {string} key 
+ * @param {string} key
+ * @returns {[boolean, object]}
 */
 export function numberIdToStringId(config, key) {
     if (isNaN(config[key][0])) {
@@ -26,9 +27,9 @@ export function numberIdToStringId(config, key) {
 export function getNukkitItem(data, count) {
     let item;
     if (typeof data[0] === 'string') {
-        item = Item.fromString(data[0]);
+        item = JItem.fromString(data[0]);
     } else {
-        item = Item.get(data[0]);
+        item = JItem.get(data[0]);
     }
     item.setDamage(data[1])
     item.setCount(count || 1);
@@ -42,6 +43,7 @@ export function getNukkitItem(data, count) {
 * @returns {JItem} nukkit的物品对象
 */
 export function getItem(name, data) {
+    const _C = contain('NWeapon_C');
     let item = getNukkitItem(data.外形);
     name = name || data.名字;
     item.setCustomName(name);
@@ -58,7 +60,7 @@ export function getItem(name, data) {
                 属性.push("§r§7" + i + ": §b" + data.属性[i]);
                 continue;
             }
-            if (Config.AttrDisplayPercent.indexOf(i) > -1) {
+            if (_C.MainConfig.AttrDisplayPercent.indexOf(i) > -1) {
                 属性.push("§r§7" + i + ": §b" + Math.round(data.属性[i] * 100 * 10000) / 10000 + "%%");
             } else {
                 属性.push("§r§7" + i + ": §b" + data.属性[i]);
@@ -78,23 +80,23 @@ export function getItem(name, data) {
     }
     switch (data.类型) {
         case "武器": {
-            if (Config["稀有度品阶排序"]) {
+            if (_C.MainConfig["稀有度品阶排序"]) {
                 lore = [
-                    data.锻造属性 && data.可副手 ? "§r§f[§b" + data.类型 + "§f]§r            §e副手武器" : "§r§f[§b" + (data.可副手 ? "副手" : "") + data.类型 + "§f]§r            " + (data.品阶 != undefined ? Config.品阶[data.品阶] : ''),
+                    data.锻造属性 && data.可副手 ? "§r§f[§b" + data.类型 + "§f]§r            §e副手武器" : "§r§f[§b" + (data.可副手 ? "副手" : "") + data.类型 + "§f]§r            " + (data.品阶 != undefined ? _C.MainConfig.品阶[data.品阶] : ''),
                     "§r§4§l一一一一一一一一一一",
                     属性.join(";"),
                     "§r§4§l一一一一一一一一一一",
                     "§r§8装备等级: §b" + data.限制等级 + (data.介绍 ? ";§r" + data.介绍 : ''),
-                    "§r" + (data.稀有度 != undefined ? Config.稀有度[data.稀有度] : '') + gemInlay
+                    "§r" + (data.稀有度 != undefined ? _C.MainConfig.稀有度[data.稀有度] : '') + gemInlay
                 ];
             } else {// 默认
                 lore = [
-                    data.锻造属性 && data.可副手 ? "§r§f[§b" + data.类型 + "§f]§r            §e副手武器" : "§r§f[§b" + (data.可副手 ? "副手" : "") + data.类型 + "§f]§r            " + (data.稀有度 != undefined ? Config.稀有度[data.稀有度] : ''),
+                    data.锻造属性 && data.可副手 ? "§r§f[§b" + data.类型 + "§f]§r            §e副手武器" : "§r§f[§b" + (data.可副手 ? "副手" : "") + data.类型 + "§f]§r            " + (data.稀有度 != undefined ? _C.MainConfig.稀有度[data.稀有度] : ''),
                     "§r§4§l一一一一一一一一一一",
                     属性.join(";"),
                     "§r§4§l一一一一一一一一一一",
                     "§r§8装备等级: §b" + data.限制等级 + (data.介绍 ? ";§r" + data.介绍 : ''),
-                    "§r" + (data.品阶 != undefined ? Config.品阶[data.品阶] : '') + gemInlay
+                    "§r" + (data.品阶 != undefined ? _C.MainConfig.品阶[data.品阶] : '') + gemInlay
                 ];
             }
             if (lore[lore.length - 1] === "§r") {
@@ -105,23 +107,23 @@ export function getItem(name, data) {
         }
         case "饰品":
         case "护甲": {
-            if (Config["稀有度品阶排序"]) {
+            if (_C.MainConfig["稀有度品阶排序"]) {
                 lore = [
-                    "§r§f[§e" + data.类型 + "§f]§r            " + (data.品阶 != undefined ? Config.品阶[data.品阶] : ''),
+                    "§r§f[§e" + data.类型 + "§f]§r            " + (data.品阶 != undefined ? _C.MainConfig.品阶[data.品阶] : ''),
                     "§r§4§l一一一一一一一一一一",
                     属性.join(";"),
                     "§r§4§l一一一一一一一一一一",
                     "§r§8装备等级: §b" + data.限制等级 + (data.介绍 ? ";§r" + data.介绍 : ''),
-                    "§r" + (data.稀有度 != undefined ? Config.稀有度[data.稀有度] : '') + gemInlay
+                    "§r" + (data.稀有度 != undefined ? _C.MainConfig.稀有度[data.稀有度] : '') + gemInlay
                 ];
             } else {// 默认
                 lore = [
-                    "§r§f[§e" + data.类型 + "§f]§r            " + (data.稀有度 != undefined ? Config.稀有度[data.稀有度] : ''),
+                    "§r§f[§e" + data.类型 + "§f]§r            " + (data.稀有度 != undefined ? _C.MainConfig.稀有度[data.稀有度] : ''),
                     "§r§4§l一一一一一一一一一一",
                     属性.join(";"),
                     "§r§4§l一一一一一一一一一一",
                     "§r§8装备等级: §b" + data.限制等级 + (data.介绍 ? ";§r" + data.介绍 : ''),
-                    "§r" + (data.品阶 != undefined ? Config.品阶[data.品阶] : '') + gemInlay
+                    "§r" + (data.品阶 != undefined ? _C.MainConfig.品阶[data.品阶] : '') + gemInlay
                 ];
             }
             if (lore[lore.length - 1] === "§r") {
@@ -176,7 +178,7 @@ export function getItem(name, data) {
             break;
         }
     }
-    if (Config.bind && Config.bind.enable && ["武器", "护甲"].indexOf(data.类型) > -1) {
+    if (_C.MainConfig.bind && _C.MainConfig.bind.enable && ["武器", "护甲"].indexOf(data.类型) > -1) {
         lore += "\n§r§l§2灵魂绑定§r§2:§r §7未绑定§b§i§n§d§r";
         item.getNamedTag().putString('PlayerBind', JSON.stringify({ name: false, past: false }));
     }
@@ -194,7 +196,7 @@ export function getItem(name, data) {
         blockitem.setItemColor(item, data.染色.r, data.染色.g, data.染色.b);
     }
     item.setLore(lore.split(";"));
-    item.getNamedTag().putString('NWeaponNameTag', ItemTypeList[data.类型] + ";" + name);
+    item.getNamedTag().putString('NWeaponNameTag', _C.ItemTypeList[data.类型] + ";" + name);
     item.setNamedTag(item.getNamedTag());
     if (data.可符文) {
         item = toUnperformedRuneWeapon(item);
@@ -210,46 +212,45 @@ export function getItem(name, data) {
  * @returns {JItem} nukkit的物品对象
  */
 export function onlyNameGetItem(type, itemname, count, sender) {
+    const _C = contain('NWeapon_C');
     let obj, item = null;
-    /** 获取共享变量 */
-    var _C = contain('NWeapon_C');
     switch (type) {
         case "护甲":
         case "防具":
         case "armor": {
-            obj = _C.ArmorConfig[itemname] || File.readFrom("./plugins/BlocklyNukkit/NWeapon/Armor/" + itemname + ".yml");
+            obj = _C.ArmorConfig[itemname] || File.readFrom("./plugins/NWeapon/Armor/" + itemname + ".yml");
             break;
         }
         case "武器":
         case "weapon": {
-            obj = _C.WeaponConfig[itemname] || File.readFrom("./plugins/BlocklyNukkit/NWeapon/Weapon/" + itemname + ".yml");
+            obj = _C.WeaponConfig[itemname] || File.readFrom("./plugins/NWeapon/Weapon/" + itemname + ".yml");
             break;
         }
         case "宝石":
         case "gem": {
-            obj = _C.GemConfig[itemname] || File.readFrom("./plugins/BlocklyNukkit/NWeapon/Gem/" + itemname + ".yml");
+            obj = _C.GemConfig[itemname] || File.readFrom("./plugins/NWeapon/Gem/" + itemname + ".yml");
             break;
         }
         case "符文":
         case "rune": {
-            obj = _C.RuneConfig[itemname] || File.readFrom("./plugins/BlocklyNukkit/NWeapon/Rune/" + itemname + ".yml");
+            obj = _C.RuneConfig[itemname] || File.readFrom("./plugins/NWeapon/Rune/" + itemname + ".yml");
             break;
         }
         case "饰品":
         case "jewelry": {
-            obj = _C.JewelryConfig[itemname] || File.readFrom("./plugins/BlocklyNukkit/NWeapon/Jewelry/" + itemname + ".yml");
+            obj = _C.JewelryConfig[itemname] || File.readFrom("./plugins/NWeapon/Jewelry/" + itemname + ".yml");
             break;
         }
         case "锻造图":
         case "paper": {
-            obj = _C.PaperConfig[itemname] || File.readFrom("./plugins/BlocklyNukkit/NWeapon/锻造图/" + itemname + ".yml");
+            obj = _C.PaperConfig[itemname] || File.readFrom("./plugins/NWeapon/锻造图/" + itemname + ".yml");
             break;
         }
         case "宝石券":
         case "精工石":
         case "强化石":
         case "锻造石": {
-            const file = File.readFrom("./plugins/BlocklyNukkit/NWeapon/OtherItem/" + itemname + ".yml");
+            const file = File.readFrom("./plugins/NWeapon/OtherItem/" + itemname + ".yml");
             if (file != "FILE NOT FOUND") {
                 obj = JSON.parse(Util.YAMLtoJSON(file));
                 itemname = obj.名字;
@@ -257,11 +258,11 @@ export function onlyNameGetItem(type, itemname, count, sender) {
             break;
         }
         default: {
-            if (sender) sender.sendMessage("[NWeapon] §cUnknowed args[1]:§7 " + type);
+            if (sender) sender.sendMessage("[NWeapon] §cUnknowed Item Type:§7 " + type);
             return null;
         }
     }
-    if (obj === undefined || obj === "FILE NOT FOUND") {
+    if (obj === undefined || obj === null) {
         if (sender) sender.sendMessage("[NWeapon] " + type + "物品 " + itemname + " §r不存在");
         return null;
     } else {
@@ -296,6 +297,7 @@ export function onlyNameGetItem(type, itemname, count, sender) {
  * @returns {string} min-max 或 x%
  */
 export function valueToString(data, i) {
+    const _C = contain('NWeapon_C');
     let back = "";
     if (typeof (data) === "object") {
         if (data[0] == data[1]) {
@@ -306,7 +308,7 @@ export function valueToString(data, i) {
             return data[0] + " - " + data[1];
         }
     }
-    if (Config.AttrDisplayPercent.indexOf(i) > -1) {
+    if (_C.MainConfig.AttrDisplayPercent.indexOf(i) > -1) {
         data = (data * 100).toFixed(2) + [];
         if (data.substring(data.length - 3) === ".00") {
             data = (data - 0).toFixed(0);

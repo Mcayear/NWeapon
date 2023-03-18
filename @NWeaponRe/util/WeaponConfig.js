@@ -1,4 +1,5 @@
 import { File, logger } from '@LLSELib';
+import { File as jFile } from 'java.io.File';
 import { Util as UtilClass } from 'cn.vusv.njsutil.Util';
 import * as Tool from './Tool.js';
 import * as blockitem from './blockitem.js';
@@ -6,39 +7,12 @@ import * as blockitem from './blockitem.js';
 const Util = new UtilClass();
 
 export var version = "2022-09-23";
-export var CommandList = [
-    ['nwe', '年系列装备插件'],
-    ['nwe reload', "重载配置文件", '<nw_0:@string=分解>'],
-    ['nwe give/drop gem/weapon/armor/... [物品名] [玩家名] [数量]', "获取装备", "<nw_1:@text=give;drop> <NWeaponItemType:@text=gem;rune;weapon;armor;jewelry;锻造图;宝石券;锻造石;强化石;精工石> <ItemName:@string> <Player:@target> <Count:@int>"],
-    ['nwe 分解', "分解手持装备", '<nw_2:@string=分解>'],
-    ['nwe 分解快捷栏', "分解物品快捷栏的装备", '<nw_3:@string=分解快捷栏>'],
-    ['nwe dz', "打开锻造界面", '<nw_4:@string=dz>'],
-    ['nwe show', '展示手中物品', '<nw_5:@string=show>'],
-    ['nwe check <attr/dz> [player]', '查询我或他人的数据', '<nw_6:@string=check> <NWeaponCheckType:@text=dz;attr> [Player:@target]'],
-    ['nwe bind', '绑定手中装备或宝石(无法被他人使用)', '<nw_7:@string=bind>'],
-    ['nwe unbind [player]', '解绑手中装备或宝石', '<nw_8:@string=bind> [Player:@target]'],
-    ['nwe addnbt [代号]', '将手中物品以代号为名保存至NBT文件', '<nw_9:@string=addnbt> [nickName:@string]'],
-    ['nwe delnbt <代号>', '删除NBT文件中指定代号的物品', '<nw_10:@string=delnbt> <nickName:@string>'],
-    ['nwe seiko', '精工手中装备', '<nw_11:@string=seiko>'],
-    ['nwe lock', '上锁装备(不会被分解)', '<nw_12:@string=lock>'],
-    ['nwe unlock', '解锁装备', '<nw_13:@string=unlock>'],
-    ['nwe offhand', '将手持物品与副手调换', '<nw_14:@string=offhand>'],
-    ['nwe inlay', "装备宝石镶嵌界面", '<nw_15:@string=inlay>'],
-    ['nwe rune inlay', '镶嵌符文', '<nw_16:@string=rune> <nw_16_1:@string=inlay>'],
-    ['new rune take', '拆卸符文', '<nw_16:@string=bore> <nw_16_2:@string=take>'],
-    ['new rune bore [player]', '为玩家手中装备打符文孔', '<nw_16:@string=bore> <nw_16_3:@string=bore> [Player:@target]'],
-    ['nwe strengthen', '装备强化界面', '<nw_17:@string=strengthen>'],
-    ['nwe fixtag', '修复武器NTag解决无法精工等问题', '<nw_18:@string=fixtag>'],
-    ['nwe upgrade <当前装备NTag> [目标装备NTag]', '打开一个转换炉用于升级/更新装备'],
-    ['nwe effect <玩家名> <属性名> [值] [时长]', '给予指定玩家指定时长的属性值', '<nw_2:@text=effect> <Player:@target> <attrName:@string> [value:@int] [time:@int]']
-];
 //★ ☆ ≛ ⋆ ⍟ ⍣ ★ ☆ ✡ ✦ ✧ ✪ ✫ ✬ ✨ ✯ ✰ ✴ ✵ ✶ ✷ ✸ ✹ ❂ ⭐ ⭑ ⭒ 🌟 🌠 🔯
 //▲ ✶ ✹
 //✶ ✸ ✹ ❂
 //3 6 9 12
 File.createDir("./plugins/NWeapon/")
 export function isExistDir(path) {
-    const jFile = Java.type('java.io.File');
     const dir = new jFile(path);
     if (!dir.exists()) {
         dir.mkdir();
@@ -219,7 +193,7 @@ function __NWeaponExecTaskList() {
                 delete TaskExecList[i];
             } catch (err) {
                 logger.info("§4NWeapon 的延时任务出现了错误, tag: " + (obj && obj["tag"]) + "，timestamp: " + i);
-                logger.info(err);
+                logger.info(err.stack);
                 delete TaskExecList[i];
             }
         }
@@ -230,7 +204,7 @@ setInterval(() => {
 }, 500);
 
 var PlayerData = {}, GemConfig = {}, RuneConfig = {}, WeaponConfig = {}, ArmorConfig = {}, JewelryConfig = {}, PaperConfig = {},
-    NbtItem = JSON.parse(Util.YAMLtoJSON(File.readFrom("./plugins/BlocklyNukkit/UseItemExec/NbtItem.yml") || '{}')),
+    NbtItem = JSON.parse(Util.YAMLtoJSON(File.readFrom("./plugins/ItemNbt/NbtItem.yml") || '{}')),
     ForgeEntry;
 getItData();
 getGemConfig();
@@ -243,22 +217,22 @@ getPaperConfig();
 // 读取玩家&NBT物品数据
 export function getItData() {
     PlayerData = JSON.parse(File.readFrom("./plugins/NWeapon/PlayerData.json"));
-    NbtItem = JSON.parse(Util.YAMLtoJSON(File.readFrom("./plugins/BlocklyNukkit/UseItemExec/NbtItem.yml") || '{}'));
+    NbtItem = JSON.parse(Util.YAMLtoJSON(File.readFrom("./plugins/ItemNbt/NbtItem.yml") || '{}'));
     ForgeEntry = JSON.parse(Util.YAMLtoJSON(File.readFrom("./plugins/NWeapon/ForgeEntry.yml") || '{}'));
 }
 // 读取宝石配置文件
 export function getGemConfig() {
-    const File = Java.type('java.io.File'), trdirl = (new File('./plugins/NWeapon/Gem')).listFiles();
+    let trdirl = File.getFilesList('./plugins/NWeapon/Gem');
     for (var i = 0; i < trdirl.length; i++) {
-        let f = trdirl[i];
-        let temp = JSON.parse(Util.YAMLtoJSON(File.readFrom(new String(f))));
+        let path = './plugins/NWeapon/Gem/'+trdirl[i];
+        let temp = JSON.parse(Util.YAMLtoJSON(File.readFrom(path)));
         // tran
         let res = Tool.numberIdToStringId(temp, "外形");
         if (res[0]) {
-            File.writeTo(new String(f), Util.JSONtoYAML(JSON.stringify(res[1])));
+            File.writeTo(path, Util.JSONtoYAML(JSON.stringify(res[1])));
         }
         // tran - end
-        for (k in temp.属性) if (temp.属性[k] === 0) delete temp.属性[k];
+        for (let k in temp.属性) if (temp.属性[k] === 0) delete temp.属性[k];
         GemConfig[temp.名字] = temp;
         if (temp.添加到创造背包) blockitem.addToCreativeBar(Tool.getItem(temp.名字, temp));
         delete GemConfig[temp.名字].名字;
@@ -267,17 +241,17 @@ export function getGemConfig() {
 }
 // 读取符文配置文件
 export function getRuneConfig() {
-    const File = Java.type('java.io.File'), trdirl = (new File('./plugins/NWeapon/Rune')).listFiles();
+    let trdirl = File.getFilesList('./plugins/NWeapon/Rune');
     for (var i = 0; i < trdirl.length; i++) {
-        let f = trdirl[i];
-        let temp = JSON.parse(Util.YAMLtoJSON(File.readFrom(new String(f))));
+        let path = './plugins/NWeapon/Rune/'+trdirl[i];
+        let temp = JSON.parse(Util.YAMLtoJSON(File.readFrom(path)));
         // tran
         let res = Tool.numberIdToStringId(temp, "外形");
         if (res[0]) {
-            File.writeTo(new String(f), Util.JSONtoYAML(JSON.stringify(res[1])));
+            File.writeTo(path, Util.JSONtoYAML(JSON.stringify(res[1])));
         }
         // tran - end
-        for (k in temp.属性) if (temp.属性[k] === 0) delete temp.属性[k];
+        for (let k in temp.属性) if (temp.属性[k] === 0) delete temp.属性[k];
         RuneConfig[temp.名字] = temp;
         if (temp.添加到创造背包) blockitem.addToCreativeBar(Tool.getItem(temp.名字, temp));
         delete RuneConfig[temp.名字].名字;
@@ -286,17 +260,17 @@ export function getRuneConfig() {
 }
 // 读取武器配置文件
 export function getWeaponConfig() {
-    const File = Java.type('java.io.File'), trdirl = (new File('./plugins/NWeapon/Weapon')).listFiles();
+    let trdirl = File.getFilesList('./plugins/NWeapon/Weapon');
     for (var i = 0; i < trdirl.length; i++) {
-        let f = trdirl[i];
-        let temp = JSON.parse(Util.YAMLtoJSON(File.readFrom(new String(f))));
+        let path = './plugins/NWeapon/Weapon/'+trdirl[i];
+        let temp = JSON.parse(Util.YAMLtoJSON(File.readFrom(path)));
         // tran
         let res = Tool.numberIdToStringId(temp, "外形");
         if (res[0]) {
-            File.writeTo(new String(f), Util.JSONtoYAML(JSON.stringify(res[1])));
+            File.writeTo(path, Util.JSONtoYAML(JSON.stringify(res[1])));
         }
         // tran - end
-        for (k in temp.属性) if (temp.属性[k] === 0) delete temp.属性[k];
+        for (let k in temp.属性) if (temp.属性[k] === 0) delete temp.属性[k];
         WeaponConfig[temp.名字] = temp;
         if (temp.添加到创造背包) blockitem.addToCreativeBar(Tool.getItem(temp.名字, temp));
         delete WeaponConfig[temp.名字].名字;
@@ -305,17 +279,17 @@ export function getWeaponConfig() {
 }
 // 读取护甲配置文件
 export function getArmorConfig() {
-    const File = Java.type('java.io.File'), trdirl = (new File('./plugins/NWeapon/Armor')).listFiles();
+    let trdirl = File.getFilesList('./plugins/NWeapon/Armor');
     for (var i = 0; i < trdirl.length; i++) {
-        let f = trdirl[i];
-        let temp = JSON.parse(Util.YAMLtoJSON(File.readFrom(new String(f))));
+        let path = './plugins/NWeapon/Armor/'+trdirl[i];
+        let temp = JSON.parse(Util.YAMLtoJSON(File.readFrom(path)));
         // tran
         let res = Tool.numberIdToStringId(temp, "外形");
         if (res[0]) {
-            File.writeTo(new String(f), Util.JSONtoYAML(JSON.stringify(res[1])));
+            File.writeTo(path, Util.JSONtoYAML(JSON.stringify(res[1])));
         }
         // tran - end
-        for (k in temp.属性) if (temp.属性[k] === 0) delete temp.属性[k];
+        for (let k in temp.属性) if (temp.属性[k] === 0) delete temp.属性[k];
         ArmorConfig[temp.名字] = temp;
         if (temp.添加到创造背包) blockitem.addToCreativeBar(Tool.getItem(temp.名字, temp));
         delete ArmorConfig[temp.名字].名字;
@@ -324,17 +298,17 @@ export function getArmorConfig() {
 }
 // 读取饰品配置文件
 export function getJewelryConfig() {
-    const File = Java.type('java.io.File'), trdirl = (new File('./plugins/NWeapon/Jewelry')).listFiles();
+    let trdirl = File.getFilesList('./plugins/NWeapon/Jewelry');
     for (var i = 0; i < trdirl.length; i++) {
-        let f = trdirl[i];
-        let temp = JSON.parse(Util.YAMLtoJSON(File.readFrom(new String(f))));
+        let path = './plugins/NWeapon/Jewelry/'+trdirl[i];
+        let temp = JSON.parse(Util.YAMLtoJSON(File.readFrom(path)));
         // tran
         let res = Tool.numberIdToStringId(temp, "外形");
         if (res[0]) {
-            File.writeTo(new String(f), Util.JSONtoYAML(JSON.stringify(res[1])));
+            File.writeTo(path, Util.JSONtoYAML(JSON.stringify(res[1])));
         }
         // tran - end
-        for (k in temp.属性) if (temp.属性[k] === 0) delete temp.属性[k];
+        for (let k in temp.属性) if (temp.属性[k] === 0) delete temp.属性[k];
         JewelryConfig[temp.名字] = temp;
         if (temp.添加到创造背包) blockitem.addToCreativeBar(Tool.getItem(temp.名字, temp));
         delete JewelryConfig[temp.名字].名字;
@@ -343,14 +317,14 @@ export function getJewelryConfig() {
 }
 // 读取锻造图配置文件
 export function getPaperConfig() {
-    const File = Java.type('java.io.File'), trdirl = (new File('./plugins/NWeapon/锻造图')).listFiles();
+    let trdirl = File.getFilesList('./plugins/NWeapon/锻造图');
     for (var i = 0; i < trdirl.length; i++) {
-        let f = trdirl[i];
-        let temp = JSON.parse(Util.YAMLtoJSON(File.readFrom(new String(f))));
+        let path = './plugins/NWeapon/锻造图/'+trdirl[i];
+        let temp = JSON.parse(Util.YAMLtoJSON(File.readFrom(path)));
         // tran
         let res = Tool.numberIdToStringId(temp, "外形");
         if (res[0]) {
-            File.writeTo(new String(f), Util.JSONtoYAML(JSON.stringify(res[1])));
+            File.writeTo(path, Util.JSONtoYAML(JSON.stringify(res[1])));
         }
         // tran - end
         PaperConfig[temp.名字] = temp;
