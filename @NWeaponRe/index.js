@@ -1,6 +1,6 @@
+//import { PlayerHealth } from 'healthapi.PlayerHealth';
 
 async function start() {
-    const { EventPriority, PowerNukkitX: pnx } = await import(':powernukkitx');
     const {
         version, _C, TaskExecList,
         getItData, getArmorConfig, getGemConfig, getJewelryConfig, getPaperConfig, getRuneConfig, getWeaponConfig
@@ -629,23 +629,6 @@ async function start() {
         cmd.setCallback(NWeaponCommandHandle);
         cmd.setup();
     });
-
-
-
-    pnx.listenEvent("cn.nukkit.event.entity.EntityDamageByEntityEvent", EventPriority.HIGH, event => {
-        console.log("HIGH")
-        event.setCancelled(true)
-    });
-    import("cn.ankele.plugin.MagicItem").then(MagicItem => {
-        exposeObject('NWeapon_MagicItem', MagicItem);// 获取魔法物品插件
-    })
-    import("com.smallaswater.littlemonster.entity.LittleNpc").then(LittleNpc => {
-        exposeObject('NWeapon_LittleNpc', LittleNpc);// 副本插件
-    })
-    import("healthapi.PlayerHealth").then(PlayerHealth => {
-        exposeObject('NWeapon_RSHealthAPI', PlayerHealth);// 获取血量核心插件
-    });
-    exposeObject('NWeapon_Skill', null);
 }
 
 export function main() {
@@ -655,7 +638,45 @@ export function main() {
         })
         .catch((err) => {
             console.error(err.stack);
+        });
+    const PlayerHealth = Java.type("healthapi.PlayerHealth");
+    /*import("healthapi.PlayerHealth")
+        .then(({ PlayerHealth }) => {
+            exposeObject('NWeapon_RSHealthAPI', PlayerHealth);// 获取血量核心插件
         })
+        .catch((err) => {
+            console.error(err.stack);
+        });*/
+    import("cn.ankele.plugin.MagicItem")
+        .then(MagicItem => {
+            exposeObject('NWeapon_MagicItem', MagicItem);// 获取魔法物品插件
+        })
+        .catch((err) => {
+            console.error(err.stack);
+        });
+    import("com.smallaswater.littlemonster.entity.LittleNpc")
+        .then(LittleNpc => {
+            exposeObject('NWeapon_LittleNpc', LittleNpc);// 副本插件
+        })
+        .catch((err) => {
+            console.error(err.stack);
+        });
+    import("com.smallaswater.npc.entitys.EntityRsNPC")
+        .then(RsNPC => {
+            exposeObject('NWeapon_RsNPC', RsNPC);// 获取若水NPC
+        })
+        .catch((err) => {
+            console.error(err.stack);
+        });
+    import('./event/damage.js')
+        .catch((err) => {
+            console.error(err.stack);
+        });
+    exposeObject('NWeapon_Skill', null);
 }
+
 export function close() {
+    if (contain('NWeapon_damageClose')) {
+        contain('NWeapon_damageClose').close();// 清除相关实体
+    }
 }

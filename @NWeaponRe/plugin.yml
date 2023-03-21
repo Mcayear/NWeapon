@@ -17,5 +17,6 @@ softdepend: # 插件的软依赖项
 - MagicItem
 - HealthAPI
 - LittleMonster
+- RsNPC
 features:
   - WsClient
