@@ -639,14 +639,13 @@ export function main() {
         .catch((err) => {
             console.error(err.stack);
         });
-    const PlayerHealth = Java.type("healthapi.PlayerHealth");
-    /*import("healthapi.PlayerHealth")
+    import("healthapi.PlayerHealth")
         .then(({ PlayerHealth }) => {
             exposeObject('NWeapon_RSHealthAPI', PlayerHealth);// 获取血量核心插件
         })
         .catch((err) => {
             console.error(err.stack);
-        });*/
+        });
     import("cn.ankele.plugin.MagicItem")
         .then(MagicItem => {
             exposeObject('NWeapon_MagicItem', MagicItem);// 获取魔法物品插件
@@ -677,6 +676,6 @@ export function main() {
 
 export function close() {
     if (contain('NWeapon_damageClose')) {
-        contain('NWeapon_damageClose').close();// 清除相关实体
+        //contain('NWeapon_damageClose').close();// 清除相关实体
     }
 }

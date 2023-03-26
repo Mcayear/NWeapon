@@ -2,30 +2,32 @@ import { EventPriority, PowerNukkitX as pnx} from ':powernukkitx';
 import { Position as JPosition } from 'cn.nukkit.level.Position';
 import { Player as JPlayer } from 'cn.nukkit.Player';
 import { Sound } from 'cn.nukkit.level.Sound';
-import { FloatTextEntity } from '../util/FloatTextEntity.js';
+import { Effect } from 'cn.nukkit.potion.Effect';
+import { FloatTextEntity } from 'cn.vusv.njsutil.FloatTextEntity';
+import { GetPlayerAttr } from '../improvements/AttrComp.js';
 import * as blockitem from '../util/blockitem.js';
+import { _C } from '../util/WeaponConfig.js';
+import { EntityRsNPC as RsNPCClass } from "com.smallaswater.npc.entitys.EntityRsNPC";
+import { Entity } from "cn.nukkit.entity.Entity";
 
 const PlayerDeathData = {}, PlayerAttkCool = new Map();
 const PlayerAttkCoolTime = 150;//  ms
-const _C = contain('NWeapon_C');
-const NMonster = false;
-const RsNPCClass = contain('NWeapon_RsNPC');
 pnx.listenEvent("cn.nukkit.event.entity.EntityDamageByEntityEvent", EventPriority.HIGH, event => {
-    console.log(event.getEventName());
-    console.log(event.isCancelled());
+    const NMonster = false;
+    const RSHealthAPI = contain('NWeapon_RSHealthAPI');
     if (event.getEventName() === "cn.nukkit.event.entity.EntityDamageEvent" || event.getEventName() === "cn.nukkit.event.entity.EntityDamageByBlockEvent") return;
     if (event.isCancelled()) {
         return;
     }
     let Wounded = event.getEntity();// 被攻击者
     let Damager = event.getDamager();// 攻击者
-    let WoundedName = entity.getEntityName(Wounded) || Wounded.getName();
-    let DamagerName = entity.getEntityName(Damager) || Damager.getName();
+    let WoundedName = Wounded.getNameTag() || Wounded.getName();
+    let DamagerName = Damager.getNameTag() || Damager.getName();
     if(RsNPCClass && Wounded instanceof RsNPCClass) {// 特判RsNPC
         return;
     }
-    let WAttr = isPlayer(Wounded) ? GetPlayerAttr(Wounded) : (NMonster ? NMonster.GetMonsterAttr(entity.getEntityID(Wounded), 0, false) : {});
-    let DAttr = isPlayer(Damager) ? GetPlayerAttr(Damager) : (NMonster ? NMonster.GetMonsterAttr(entity.getEntityID(Damager), 0, false) : {});
+    let WAttr = isPlayer(Wounded) ? GetPlayerAttr(Wounded) : (NMonster ? NMonster.GetMonsterAttr(Wounded.getId(), 0, false) : {});
+    let DAttr = isPlayer(Damager) ? GetPlayerAttr(Damager) : (NMonster ? NMonster.GetMonsterAttr(Damager.getId(), 0, false) : {});
     // 实体名字格式化
     if (isPlayer(Wounded)) {
         WoundedName = Wounded.name;
@@ -77,7 +79,7 @@ pnx.listenEvent("cn.nukkit.event.entity.EntityDamageByEntityEvent", EventPriorit
     }
     // 寒冰攻击 (减移动速度)
     if (getProbabilisticResults(defineData(DAttr.寒冰攻击))) {
-        entity.addEntityEffect(Wounded, 2, 1, 140, 128, 128, 128);
+        addEntityEffect(Wounded, 2, 1, 140, 128, 128, 128);
         if (isPlayer(Damager)) {
             Damager.sendMessage(WoundedName + " §c受到了寒冰攻击！");
         }
@@ -97,7 +99,7 @@ pnx.listenEvent("cn.nukkit.event.entity.EntityDamageByEntityEvent", EventPriorit
         if (H > MaxH) {
             PlayerHealth.setHealth(MaxH);
         }
-    } else {
+    } else if (NMonster) {
         let h = Wounded.getHealth();
         let maxh = (WAttr.血量值 + defineData(WAttr.血量加成)) * (1 + defineData(WAttr.生命加成));
         Wounded.setMaxHealth(maxh);
@@ -240,23 +242,23 @@ pnx.listenEvent("cn.nukkit.event.entity.EntityDamageByEntityEvent", EventPriorit
     }
     event.setDamage(Math.floor(FinalDamage));
     if (isPlayer(Wounded) && FinalDamage > 0) {
-        updateUnbreaking(Wounded, false);
+        //updateUnbreaking(Wounded, false);
         PlayerDeathData[Wounded.name] = [DamagerName, isPlayer(Damager) ? blockitem.getItemInHand(Damager).getCustomName() : null];
         //console.log("设置了"+WoundedName+"的死亡提示")
     }
     if (isPlayer(Damager)) {
-        updateUnbreaking(Damager, true);
+        //updateUnbreaking(Damager, true);
     }
     if (_C.MainConfig.useHarmFloatWord && isPlayer(Damager)) {
-        let location = Wounded.getLocation();
-        let pos = new JPosition(location.x, location.y + 0.7, location.z, Wounded.getLevel());
-        let FloatText = new FloatTextEntity(Wounded.getLevel().getChunk(Wounded.getChunkX(), Wounded.getChunkZ()), pos);
+        let FloatText = new FloatTextEntity(Wounded.getLevel().getChunk(Wounded.getChunkX(), Wounded.getChunkZ()), Entity.getDefaultNBT(Wounded));
+        FloatText.setNameTagVisible(true);
+        FloatText.setNameTag(FinalDamage < 0 ? "§a+" +(-FinalDamage) : "§c-"+FinalDamage);
+        FloatText.setNameTagAlwaysVisible(true);
+        FloatText.setScale(0.0001);
         Wounded.getLevel().addEntity(FloatText);
-        let target = FloatText.getNearestPlayer();
-        if (target) {
-            FloatText.lookAt(target);
-        }
-        FloatText.setMotion(FloatText.getLocation().getDirectionVector().multiply(-1).add(0, 0.1, 0));
+        FloatText.spawnToAll();
+        FloatText.lookAt(Damager);
+        FloatText.knockBack(Damager, 0, FloatText.x - Damager.x, FloatText.z - Damager.z, 0.3);
     }
 });
 /**
@@ -275,6 +277,45 @@ function isPlayer(entity) {
 function defineData(d) {
 	return d ? new Number(d) : 0;
 }
+/**
+ * 为生物添加药水状态
+ * @param {*} entity 生物对象
+ * @param {*} id 药水id
+ * @param {*} level 药效等级
+ * @param {*} tick 持续时间(刻)
+ * @param {*} r 药效粒子颜色 r
+ * @param {*} g 药效粒子颜色 g
+ * @param {*} b 药效粒子颜色 b
+ */
+function addEntityEffect(entity, id, level, tick, r, g, b){
+    const effect =Effect.getEffect(id).setAmplifier(level).setVisible(true).setDuration(tick);
+    effect.setColor(r, g, b);
+    entity.addEffect(effect);
+}
+/**
+ * 获取概率结果，传入数值返回布尔值
+ * @param {number} value 
+ * @returns {boolean}
+ */
+function getProbabilisticResults(value){
+	if (isNaN(value)) {
+		return false;
+	} else {
+		value = Number(value).toFixed(5);
+	}
+	let length = 0;
+	value = value + [];
+	if (value <= 0) {
+		return false;
+	} else if (value < 1) {
+		length = value.length - 2;
+		value = value * Math.pow(10, length);
+	} else if (value >= 1) {
+		return true;
+	}
+	if ((Math.random() + []).substr(3, length) - 0 + 1 > value) return false;
+	return true;
+}
 function close() {
     for (const i of Server.getInstance().getLevels().values()) { // Clear all the JS entities.
         /** @type {cn.nukkit.level.Level} */
@@ -287,3 +328,4 @@ function close() {
     }
 }
 exposeObject('NWeapon_damageClose', close);// 监听伤害事件
+
