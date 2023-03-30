@@ -2,6 +2,8 @@ import { Item as JItem } from "cn.nukkit.item.Item";
 import { Util as UtilClass } from 'cn.vusv.njsutil.Util';
 import * as blockitem from "./blockitem.js";
 import { File } from '@LLSELib';
+import { Player as JPlayer } from 'cn.nukkit.Player';
+import { Entity as JEntity } from "cn.nukkit.entity.Entity";
 
 const Util = new UtilClass();
 
@@ -455,4 +457,20 @@ export function getProbabilisticResults(value) {
     }
     if ((Math.random() + []).substring(3, length + 3) - 0 + 1 > value) return false;
     return true;
+}
+/**
+ * 判断是不是玩家
+ * @param {JEntity} entity
+ * @returns {boolean}
+ */
+export function isPlayer(entity) {
+    return entity instanceof JPlayer;
+}
+/**
+ * 将传入的参数转换为数字类型
+ * @param {any} d - 待转换的参数
+ * @return {number} - 转换后的数字，如果传入参数为空则返回0
+ */
+export function defineData(d) {
+    return d ? new Number(d) : 0;
 }

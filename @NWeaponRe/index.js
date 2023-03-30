@@ -1,5 +1,3 @@
-//import { PlayerHealth } from 'healthapi.PlayerHealth';
-
 async function start() {
     const {
         version, _C, TaskExecList,
@@ -9,7 +7,7 @@ async function start() {
     const { Util: UtilClass } = await import('cn.vusv.njsutil.Util');
     const { Server } = await import('cn.nukkit.Server');
     const Tool = await import('./util/Tool.js');
-
+    const { GetPlayerAttr } = await import('./improvements/AttrComp.js');
     const { ForgingFakeInvChange } = await import('./improvements/forging/ForgingFakeInvChange.js');
     const { NWeaponDecomposition } = await import('./improvements/Decomposition/NWeaponDecomposition.js');
     const { checkAttr } = await import('./improvements/check/check.js');
@@ -60,7 +58,7 @@ async function start() {
      * @returns 
      */
     function NWeaponCommandHandle(_cmd, _ori, out, res) {
-        if (_ori.type === 0 || _ori.type === 7) {
+        if (_ori.type != 0 && _ori.type != 7) {
             out.error("Wrong origin type: " + _ori.type);
             return;
         }
@@ -647,27 +645,35 @@ export function main() {
             console.error(err.stack);
         });
     import("cn.ankele.plugin.MagicItem")
-        .then(MagicItem => {
+        .then(({ MagicItem }) => {
             exposeObject('NWeapon_MagicItem', MagicItem);// 获取魔法物品插件
         })
         .catch((err) => {
             console.error(err.stack);
         });
     import("com.smallaswater.littlemonster.entity.LittleNpc")
-        .then(LittleNpc => {
+        .then(({ LittleNpc }) => {
             exposeObject('NWeapon_LittleNpc', LittleNpc);// 副本插件
         })
         .catch((err) => {
             console.error(err.stack);
         });
     import("com.smallaswater.npc.entitys.EntityRsNPC")
-        .then(RsNPC => {
-            exposeObject('NWeapon_RsNPC', RsNPC);// 获取若水NPC
+        .then(({ EntityRsNPC }) => {
+            exposeObject('NWeapon_RsNPC', EntityRsNPC);// 获取若水NPC
         })
         .catch((err) => {
             console.error(err.stack);
         });
     import('./event/damage.js')
+        .catch((err) => {
+            console.error(err.stack);
+        });
+    import('./event/playerItemHeld.js')
+        .catch((err) => {
+            console.error(err.stack);
+        });
+    import('./task/runPlayerLoopTask.js')
         .catch((err) => {
             console.error(err.stack);
         });
