@@ -24,15 +24,12 @@ export function checkAttr(sender, p, type, data) {
                 addLabel("距离下一级(所需): §6" + PlayerData[p.getName()].req);
             mc.getPlayer(sender.getName()).sendForm(winx, function(){});
         } else if (type === "attr") {
-            console.log('a1')
             let str = "";
             if (!data) {
                 return sender.sendMessage("[NWeapon] 没有玩家§8" + p.getName() + "§f的数据");
             }
-            console.log('a2')
             let winx = mc.newCustomForm();//创建窗口
             winx.setTitle('玩家属性 - ' + p.getName());
-            console.log('a3')
             for (let i in data.Main) {
                 let value = valueToString(data.Main[i], i);
                 if (value == "0") {
@@ -77,9 +74,7 @@ export function checkAttr(sender, p, type, data) {
                     }
                 }
             }
-            console.log('a4')
             winx.addLabel("§l§7### 总属性§r\n" + str);
-            console.log(JSON.stringify(Object.keys(data)))
             for (let i in data) {
                 if (["Effect", "EffectSuit", "Main"].indexOf(i) > -1) {
                     continue;
@@ -94,8 +89,6 @@ export function checkAttr(sender, p, type, data) {
                 }
                 winx.addLabel(" §7# " + i + "§r\n" + str);
             }
-            console.log('a5')
-            console.log(str)
             str = "";
             let nowTime = (new Date().getTime() / 1000).toFixed(0);
             for (let i in data.Effect) {

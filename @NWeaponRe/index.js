@@ -24,17 +24,23 @@ async function start() {
 
     if (!contain('PlayerSmithingTempData')) {// 防止重复 PlayerSmithingTempData
         exposeObject('PlayerSmithingTempData', new Object());
-
     }
     /**
      * 玩家锻造界面临时数据
      * 一般为锻造图配置
      */
-    var PlayerSmithingTempData = contain('PlayerSmithingTempData');
+    //var PlayerSmithingTempData = contain('PlayerSmithingTempData');
 
     // 仅存储在内存的数据
     var ShowObj = {}, PlayerShowCount = {};
-    var seikoFailedNum = {}, strengthFailedNum = {};
+    
+    if (!contain('seikoFailedNum')) {// 精工失败次数 记录
+        exposeObject('seikoFailedNum', new Object());
+    }
+
+    if (!contain('strengthFailedNum')) {// 强化失败次数 记录
+        exposeObject('strengthFailedNum', new Object());
+    }
 
     /**
      * 添加延时任务
@@ -667,15 +673,15 @@ export function main() {
         });
     import('./event/damage.js')
         .catch((err) => {
-            console.error(err.stack);
+            console.error('./event/damage.js  loading failed.');
         });
     import('./event/playerItemHeld.js')
         .catch((err) => {
-            console.error(err.stack);
+            console.error('./event/playerItemHeld.js  loading failed.');
         });
     import('./task/runPlayerLoopTask.js')
         .catch((err) => {
-            console.error(err.stack);
+            console.error('./task/runPlayerLoopTask.js  loading failed.');
         });
     exposeObject('NWeapon_Skill', null);
 }

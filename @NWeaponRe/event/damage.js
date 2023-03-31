@@ -6,7 +6,7 @@ import { GetPlayerAttr } from '../improvements/AttrComp.js';
 import * as blockitem from '../util/blockitem.js';
 import { _C } from '../util/WeaponConfig.js';
 import { Entity as JEntity } from "cn.nukkit.entity.Entity";
-import { isPlayer, defineData } from "../util/Tool.js";
+import { isPlayer, defineData, getProbabilisticResults, getRandomNum } from "../util/Tool.js";
 
 /** @type {com.smallaswater.littlemonster.entity.LittleNpc} */
 let LittleNpcClass = null;
@@ -18,7 +18,7 @@ import("com.smallaswater.littlemonster.entity.LittleNpc")
 let RsNPCClass = null;
 import("com.smallaswater.npc.entitys.EntityRsNPC")
     .then(({ EntityRsNPC }) => {
-        RsNPCClass = EntityRsNPC;// 副本插件
+        RsNPCClass = EntityRsNPC;// NPC插件
     });
 /** @type {healthapi.PlayerHealth} */
 let RSHealthAPI = null;
@@ -28,7 +28,7 @@ import("healthapi.PlayerHealth")
     });
 const PlayerDeathData = {}, PlayerAttkCool = new Map();
 const PlayerAttkCoolTime = 150;//  ms
-pnx.listenEvent("cn.nukkit.event.entity.EntityDamageByEntityEvent", EventPriority.HIGH, event => {
+pnx.listenEvent("cn.nukkit.event.entity.EntityDamageByEntityEvent", EventPriority.LOW, event => {
     const NMonster = false;
     if (event.getEventName() === "cn.nukkit.event.entity.EntityDamageEvent" || event.getEventName() === "cn.nukkit.event.entity.EntityDamageByBlockEvent") return;
     if (event.isCancelled()) {
@@ -51,6 +51,11 @@ pnx.listenEvent("cn.nukkit.event.entity.EntityDamageByEntityEvent", EventPriorit
             let key = entry.getKey();
             let value = entry.getValue();
             WAttr[key] = value;
+            if (typeof(value) === 'number') {
+                WAttr[key] = value;
+            } else {
+                WAttr[key] = getRandomNum(value);
+            }
         }
     } else {
         WAttr = isPlayer(Wounded) ? GetPlayerAttr(Wounded) : (NMonster ? NMonster.GetMonsterAttr(Wounded.getId(), 0, false) : {});
@@ -139,9 +144,8 @@ pnx.listenEvent("cn.nukkit.event.entity.EntityDamageByEntityEvent", EventPriorit
     // 三大乘区: 攻击力 * 攻击加成 * 暴击伤害
     // Attack * Damage Bonus * Critical Ratio
     let 攻击力 = Number((defineData(DAttr.攻击力) * (1 + defineData(DAttr.攻击加成))).toFixed(2));
-    let 破防攻击 = getProbabilisticResults(DAttr.破防率) ? DAttr.破防攻击 : 0;
-
-    let 破甲攻击 = getProbabilisticResults(DAttr.破甲率) ? DAttr.破甲攻击 : 0;
+    let 破防攻击 = getProbabilisticResults(DAttr.破防率) ? defineData(DAttr.破防攻击) : 0;
+    let 破甲攻击 = getProbabilisticResults(DAttr.破甲率) ? defineData(DAttr.破甲攻击) : 0;
     WAttr.护甲强度 = defineData(WAttr.护甲强度) - 破甲攻击;// TODO: 未实验
 
     攻击力 = 攻击力 * (1 - defineData(WAttr.护甲强度));
@@ -303,30 +307,6 @@ function addEntityEffect(entity, id, level, tick, r, g, b) {
     const effect = Effect.getEffect(id).setAmplifier(level).setVisible(true).setDuration(tick);
     effect.setColor(r, g, b);
     entity.addEffect(effect);
-}
-/**
- * 获取概率结果，传入数值返回布尔值
- * @param {number} value 
- * @returns {boolean}
- */
-function getProbabilisticResults(value) {
-    if (isNaN(value)) {
-        return false;
-    } else {
-        value = Number(value).toFixed(5);
-    }
-    let length = 0;
-    value = value + [];
-    if (value <= 0) {
-        return false;
-    } else if (value < 1) {
-        length = value.length - 2;
-        value = value * Math.pow(10, length);
-    } else if (value >= 1) {
-        return true;
-    }
-    if ((Math.random() + []).substr(3, length) - 0 + 1 > value) return false;
-    return true;
 }
 function close() {
     for (const i of Server.getInstance().getLevels().values()) { // Clear all the JS entities.

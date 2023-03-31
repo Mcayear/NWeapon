@@ -3,13 +3,14 @@ import { DoubleChestFakeInventory } from 'com.nukkitx.fakeinventories.inventory.
 import { FakeInventory } from 'com.nukkitx.fakeinventories.inventory.FakeInventory';
 import { Item as JItem } from "cn.nukkit.item.Item";
 import { Entity as JEntity } from 'cn.nukkit.entity.Entity';
+import { Player as JPlayer } from 'cn.nukkit.Player';
 import { EntityHuman } from 'cn.nukkit.entity.EntityHuman';
 import { Inventory } from 'cn.nukkit.inventory.Inventory';
 
 /**
  * 获取玩家的背包物品栏。
  *
- * @param {Player} player - 玩家对象。
+ * @param {PlaJPlayeryer} player - 玩家对象。
  * @param {onSlotChangeCallback} callback - The callback that handles the slotChange.
  * @returns {Inventory} 玩家背包物品栏的拷贝。
  */
@@ -29,6 +30,37 @@ export function getPlayerInv(player, callback) {
     }
     return inv;
 }
+/**
+ * 设置玩家的物品栏
+ * @param {JPlayer} player - 玩家对象
+ * @param {Inventory} inv - 新的物品栏
+ */
+export function setPlayerInv(player, inv) {
+    player.getInventory().setContents(inv.getContents());
+}
+
+/**
+ * 设置实体手中的物品
+ * @param {JEntity} entity - 实体对象
+ * @param {JItem} item - 物品对象
+ */
+export function setEntityItemInHand(entity, item) {
+    if (entity instanceof EntityHuman) {
+        entity.getInventory().setItemInHand(item);
+    }
+}
+
+/**
+ * 设置实体副手中的物品
+ * @param {JEntity} entity - 实体对象
+ * @param {JItem} item - 物品对象
+ */
+export function setEntityItemInOffHand(entity, item) {
+    if (entity instanceof EntityHuman) {
+        entity.getOffhandInventory().setItem(0, item);
+    }
+}
+
 /**
  * 获取物品栏指定槽位上的物品。
  *
@@ -107,7 +139,7 @@ export function getItemsInInv(inv) {
  * 获取实体手中的物品
  * @param {JEntity} entity - 实体对象
  * @returns {JItem} - 手持的物品
- */ 
+ */
 export function getEntityItemInHand(entity) {
     if (entity instanceof EntityHuman) {
         return entity.getInventory().getItemInHand();
@@ -121,10 +153,10 @@ export function getEntityItemInHand(entity) {
  * @param {JEntity} entity 
  * @return {JItem} - 副手的物品
  */
-export function getEntityItemInOffHand(entity){
-    if(entity instanceof EntityHuman){
+export function getEntityItemInOffHand(entity) {
+    if (entity instanceof EntityHuman) {
         return entity.getOffhandInventory().getItem(0);
-    }else{
+    } else {
         return null;
     }
 }

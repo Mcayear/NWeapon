@@ -1,9 +1,10 @@
 import { Player as JPlayer } from 'cn.nukkit.Player';
+import { getRandomNum, isPlayer } from '../util/Tool.js';
 
 // 为玩家属性申请共享内存
-if (!contain("NWeapon_PlayerAttr")) exposeObject("NWeapon_PlayerAttr", {});
+if (!contain("NWeapon_PlayerAttr")) exposeObject("NWeapon_PlayerAttr", new Map());
 // 为怪物属性申请共享内存
-//if (!!contain("NWeapon_MonsterAttr")) exposeObject("NWeapon_MonsterAttr", {});
+//if (!!contain("NWeapon_MonsterAttr")) exposeObject("NWeapon_MonsterAttr", new Map());
 
 /**
  * 获取玩家属性
@@ -14,19 +15,24 @@ if (!contain("NWeapon_PlayerAttr")) exposeObject("NWeapon_PlayerAttr", {});
  */
 export function GetPlayerAttr(player, mode, key) {
     const _C = contain('NWeapon_C');
+    /** 玩家名字 */
+    let name = "";
 	if (isPlayer(player)) {
 		if (_C.MainConfig["worlds-disabled"].indexOf(player.getLevel().getName()) > -1) {
 			return {};
 		}
-		player = player.getName();
+		name = player.getName().toLocaleLowerCase();
 	} else if (typeof(player) != "string") {
 		return {};
-	}
-	let data = contain("NWeapon_PlayerAttr")[player];
-	if (!data) {
+	} else {
+        name = player.toLocaleLowerCase();
+    }
+    /** @type {Map<string, {}>} */
+	let dataMap = contain("NWeapon_PlayerAttr");
+	if (!dataMap.has(name)) {
 		return {};
 	}
-	data = JSON.parse(JSON.stringify(data));
+	let data = JSON.parse(JSON.stringify(dataMap.get(name)));// 深拷贝，避免影响原数据
 	if (mode) {
 		for (var i in data.Effect) {
 			if (!data.Main[i]) {
@@ -72,29 +78,34 @@ export function GetPlayerAttr(player, mode, key) {
 /**
  * 设置玩家属性
  * @param {JPlayer} player 
- * @param {*} item 
+ * @param {string} item 设置的属性项目例如，装备武器
  * @param {*} newAttr 
  * @returns 
  */
 export function SetPlayerAttr(player, item, newAttr) {
+    /** 玩家名字 */
+    let name = "";
 	if (isPlayer(player)) {
-		player = player.getName();
+		name = player.getName().toLocaleLowerCase();
 	} else if(typeof(item) != "string") {
 		return false;
-	}
+    } else {
+        name = player.toLocaleLowerCase();
+    }
 	if (typeof(newAttr) === "string") newAttr = JSON.parse(newAttr);
-	let data = contain("NWeapon_PlayerAttr");
-	if (!data[player]) {
-		data[player] = {Effect: {}, EffectSuit: [], Main: {}};
+    /** @type {Map<string, {}>} */
+	let dataMap = contain("NWeapon_PlayerAttr");
+	if (!dataMap.has(name)) {
+		dataMap.set(name, {Effect: {}, EffectSuit: [], Main: {}});
 	}
+	let data = JSON.parse(JSON.stringify(dataMap.get(name)));// 深拷贝，避免影响原数据
 	switch (item) {
 		case "Effect": {//newAttr: {id: 1, level: 1, time: s};
 			if (newAttr.id === false) {
-				data[player].Effect = {};
-				//database.memoryStorage.setItem("PlayerAttr", data);
+				data["Effect"] = {};
 				return true;
 			}
-			let effectdata = data[player].Effect[newAttr.id];
+			let effectdata = data["Effect"][newAttr.id];
 			if (!effectdata) {
 				effectdata = {level: 0, time: 0};
 			}
@@ -103,17 +114,17 @@ export function SetPlayerAttr(player, item, newAttr) {
 			}
 			if (newAttr.time) {
 				effectdata.time = Number((new Date().getTime()/1000).toFixed(0)) + Number(newAttr.time);
-				data[player].Effect[newAttr.id] = effectdata;
+				data.Effect[newAttr.id] = effectdata;
 			} else {
-				delete data[player].Effect[newAttr.id];
+				delete data.Effect[newAttr.id];
 			}
-			//database.memoryStorage.setItem("PlayerAttr", data);
+            dataMap.set(name, data);
 			return true;
 		}
-		case "EffectSuit": {//newAttr: ["suit1", "suit2"]
-			data[player]["EffectSuit"] = newAttr;
-			//database.memoryStorage.setItem("PlayerAttr", data);
-			return data[player]["EffectSuit"];
+		case "EffectSuit": {// newAttr: ["suit1", "suit2"]
+			data["EffectSuit"] = newAttr;
+            dataMap.set(name, data);
+			return data["EffectSuit"];
 		}
 		case "Main": {
 			logger.warning("setPlayerAttr(): '"+item+"' is the wrong item parameter.");
@@ -121,68 +132,37 @@ export function SetPlayerAttr(player, item, newAttr) {
 		}
 	}
 	if (newAttr['delete']) {
-		delete data[player][item];
+		delete data[item];
 		return true;
 	}
-	if (!data[player][item]) data[player][item] = {};
-	let oldAttr = data[player][item];
+	if (!data[item]) data[item] = {};
+	let oldAttr = data[item];
 	for (var i in newAttr) {
 		if (typeof(newAttr[i]) === 'string' || typeof(newAttr[i]) === 'number') {
 			newAttr[i] = [Number(newAttr[i]), Number(newAttr[i])];
 		}
 		if (typeof(newAttr[i]) === 'object') {
-			if (!data[player].Main[i]) data[player].Main[i] = [0, 0];
+			if (!data.Main[i]) data.Main[i] = [0, 0];
 			for(let k = 0; k<newAttr[i].length; k++) {
-				data[player].Main[i][k] = data[player].Main[i][k] - (oldAttr[i] ? oldAttr[i][k] : 0) + newAttr[i][k];
+				data.Main[i][k] = data.Main[i][k] - (oldAttr[i] ? oldAttr[i][k] : 0) + newAttr[i][k];
 			}
 			continue;
 		}
 	}
 	for (var i in oldAttr) {// 处理oldAttr有但是newAttr没有的属性
 		if (!newAttr[i]) if (typeof(oldAttr[i]) === 'object') {
-			if (!data[player].Main[i]) data[player].Main[i] = [0, 0];
+			if (!data.Main[i]) data.Main[i] = [0, 0];
 			for(let k = 0; k<oldAttr[i].length; k++) {
-				data[player].Main[i][k] = data[player].Main[i][k] - oldAttr[i][k];
+				data.Main[i][k] = data.Main[i][k] - oldAttr[i][k];
 			}
 		} else {
-			data[player].Main[i] = data[player].Main[i] - oldAttr[i];
+			data.Main[i] = data.Main[i] - oldAttr[i];
 		}
 	}
-	data[player][item] = newAttr;
-	//database.memoryStorage.setItem("PlayerAttr", data);
+	data[item] = newAttr;
+    dataMap.set(name, data);
 	if (JSON.stringify(newAttr).length === 2) {
-		delete data[player][item];
+		delete data[item];
 	}
 	return true;
-}
-
-/**
- * 判断是不是玩家
- * @param {*} entity 
- * @returns {boolean}
- */
-function isPlayer(entity) {
-	return entity instanceof JPlayer;
-}
-/**
- * 获取一个数组范围内的随机数
- * @param {[number,number]} array - 一个包含两个数字的数组，表示最小值和最大值
- * @return {number} - 返回一个在最小值和最大值之间的随机数，保留两位小数
- */
-function getRandomNum(array){
-	let length = 0;
-	if (array.length === 1 && array[0] === array[1]) {
-		return array[0];
-	}
-	array.forEach(function (v){
-		let last = (v + []).split(".")[1];
-		if (last && length < last.length) {
-			length = last.length;
-		}
-	});
-	length = Math.pow(10, length + 2);
-	let minNum = array[0] * length;
-	let maxNum = array[1] * length;
-	return parseInt(Math.random() * (maxNum - minNum + 1) + minNum,10) / length;
-    
 }

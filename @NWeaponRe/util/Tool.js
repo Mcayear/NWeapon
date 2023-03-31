@@ -216,6 +216,7 @@ export function getItem(name, data) {
 export function onlyNameGetItem(type, itemname, count, sender) {
     const _C = contain('NWeapon_C');
     let obj, item = null;
+    type = type.toLocaleLowerCase();
     switch (type) {
         case "护甲":
         case "防具":
@@ -291,6 +292,45 @@ export function onlyNameGetItem(type, itemname, count, sender) {
     }
     return item;
 }
+/**
+ * 获取装备的配置
+ * @param {string} itemTag 类似 Weapon;鬼墨的大保剑
+ * @returns 
+ */
+export function getNWeaponConfig(itemTag) {
+    const _C = contain('NWeapon_C');
+	const index_ = itemTag.indexOf(";");
+	const arr = [itemTag.substr(0, index_), itemTag.substr(index_+1)];
+	switch (arr[0]) {
+		case "Weapon": {
+			if (_C.WeaponConfig[arr[1]]) {
+				return _C.WeaponConfig[arr[1]] || null;
+			}
+			return null;
+		}
+		case "Armor": {
+			if (_C.ArmorConfig[arr[1]]) {
+				return _C.ArmorConfig[arr[1]] || null;
+			}
+			return null;
+		}
+		case "Gem": {
+			if (_C.GemConfig[arr[1]]) {
+				return _C.GemConfig[arr[1]] || null;
+			}
+			return null;
+		}
+		case "Jewelry": {
+			if (_C.JewelryConfig[arr[1]]) {
+				return _C.JewelryConfig[arr[1]] || null;
+			}
+			return null;
+		}
+		default: {
+			return null;
+		}
+	}
+}
 
 /**
  * 将数据可视化，输入data,属性输出min-max或x%
@@ -359,6 +399,27 @@ export function getArrayProbabilisticResults(array, index) {
         total += array[i] * Math.pow(10, length);
         if (total >= random) return i;
     }
+}
+/**
+ * 获取一个数组范围内的随机数
+ * @param {[number,number]} array - 一个包含两个数字的数组，表示最小值和最大值
+ * @return {number} - 返回一个在最小值和最大值之间的随机数，保留两位小数
+ */
+export function getRandomNum(array){
+	let length = 0;
+	if (array.length === 1 && array[0] === array[1]) {
+		return array[0];
+	}
+	array.forEach(function (v){
+		let last = (v + []).split(".")[1];
+		if (last && length < last.length) {
+			length = last.length;
+		}
+	});
+	length = Math.pow(10, length + 2);
+	let minNum = array[0] * length;
+	let maxNum = array[1] * length;
+	return parseInt(Math.random() * (maxNum - minNum + 1) + minNum,10) / length;
 }
 /**
  * 对象复制，去除其关联性

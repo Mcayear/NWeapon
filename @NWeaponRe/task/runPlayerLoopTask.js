@@ -4,11 +4,11 @@ import { defineData } from "../util/Tool.js";
 import getAttributeMain from '../improvements/GetAttributeMain.js';
 
 const server = Server.getInstance();
-/** @type {com.smallaswater.npc.entitys.EntityRsNPC} */
+/** @type {healthapi.PlayerHealth} */
 let RSHealthAPI = null;
-import("com.smallaswater.npc.entitys.EntityRsNPC")
-    .then(({ EntityRsNPC }) => {
-        RSHealthAPI = EntityRsNPC;// 副本插件
+import("healthapi.PlayerHealth")
+    .then(({ PlayerHealth }) => {
+        RSHealthAPI = PlayerHealth;// 血量核心插件
     });
 /** 
  * 遍历在线玩家，根据他们的属性和效果来调整他们的血量和移速
@@ -23,7 +23,7 @@ function loopTask() {
 		var addHealth = 0;
 		SetPlayerAttr(player, "装备武器", getAttributeMain(player));
 		const Attr = GetPlayerAttr(player);
-		const maxh = Attr.血量加成 * (1 + defineData(Attr.生命加成));
+		const maxh = (Attr.血量加成 || 20) * (1 + defineData(Attr.生命加成));
 		addHealth += defineData(Attr.每秒恢复);
 		
 		var effect;

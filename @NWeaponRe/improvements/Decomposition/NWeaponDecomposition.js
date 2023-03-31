@@ -2,6 +2,7 @@ import * as blockitem from '../../util/blockitem.js';
 import { Player } from "cn.nukkit.Player";
 import { Item as JItem } from "cn.nukkit.item.Item";
 import { Server } from 'cn.nukkit.Server';
+import { getNWeaponConfig } from '../../util/Tool.js';
 
 const server = Server.getInstance();
 /**
