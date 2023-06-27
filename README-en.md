@@ -1,6 +1,8 @@
 # NWeapon
 A PNX-JS plugin written in JS.
 
+This repository is archived, use [NWeaponRe](https://github.com/Mcayear/NWeaponRe) instead
+
 ## Plugin Commands
 
 | Command                | Description                                                      | Permission |

@@ -1,5 +1,8 @@
 # NWeapon
 一个基于PNX的由JS编写的PNX-JS插件
+
+此仓库已归档，使用 [NWeaponRe](https://github.com/Mcayear/NWeaponRe) 替代
+
 ## 插件命令
 | 命令 | 解释 | 权限 |
 | --- | --- | --- |
